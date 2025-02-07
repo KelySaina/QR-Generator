@@ -11,6 +11,16 @@ function App() {
 
   const t = translations[language];
 
+  // Extract URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const content = params.get("content");
+    const fn = params.get("fn");
+
+    if (content) setText(content);
+    if (fn) setFileName(fn);
+  }, []);
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -18,16 +28,6 @@ function App() {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
-
-  useEffect(() => {
-    // Extract URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const contentParam = params.get("content");
-    const fnParam = params.get("fn");
-
-    if (contentParam) setText(contentParam);
-    if (fnParam) setFileName(fnParam);
-  }, []);
 
   const handleDownload = () => {
     const svg = document.querySelector("svg");
@@ -92,22 +92,25 @@ function App() {
 
           <div className="space-y-6">
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="content"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  {t.contentLabel}
-                </label>
-                <input
-                  id="content"
-                  type="text"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={t.contentPlaceholder}
-                  className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                />
-              </div>
+              {/* Hide content input if content param exists */}
+              {!text && (
+                <div>
+                  <label
+                    htmlFor="content"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    {t.contentLabel}
+                  </label>
+                  <input
+                    id="content"
+                    type="text"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder={t.contentPlaceholder}
+                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+              )}
 
               {text && (
                 <div>
