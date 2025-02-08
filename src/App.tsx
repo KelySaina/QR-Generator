@@ -1,87 +1,100 @@
-import React, { useState, useEffect } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import { Moon, Sun, Download, Languages } from "lucide-react";
-import { translations } from "./translations";
+import React, { useState, useEffect } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import { Moon, Sun, Download, Languages } from 'lucide-react';
+import { translations } from './translations';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const [text, setText] = useState("");
-  const [fileName, setFileName] = useState("qr-code");
-  const [language, setLanguage] = useState<"en" | "fr">("en");
+  const [text, setText] = useState('');
+  const [fileName, setFileName] = useState('qr-code');
+  const [language, setLanguage] = useState<'en' | 'fr'>('en');
+  const [onlyQR, setOnlyQR] = useState(false);
 
   const t = translations[language];
 
   // Extract URL parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const content = params.get("content");
-    const fn = params.get("fn");
+    const content = params.get('content');
+    const fn = params.get('fn');
+    const onlyQRParam = params.get('onlyQR');
 
     if (content) setText(content);
     if (fn) setFileName(fn);
+    if (onlyQRParam !== null) setOnlyQR(true);
   }, []);
 
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add('dark');
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
 
   const handleDownload = () => {
-    const svg = document.querySelector("svg");
+    const svg = document.querySelector('svg');
     if (!svg) return;
 
     const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const img = new Image();
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.fillStyle = darkMode ? "#1f2937" : "#ffffff";
+      ctx.fillStyle = darkMode ? '#1f2937' : '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
 
-      const pngFile = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
+      const pngFile = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
       downloadLink.download = `${fileName}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
     };
 
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
   };
 
+  // 🔹 If "onlyQR" is true, render only the QR code
+  if (onlyQR) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
+        {text && (
+          <QRCodeSVG
+            value={text}
+            size={250}
+            level="H"
+            includeMargin={true}
+            fgColor={darkMode ? '#ffffff' : '#000000'}
+            bgColor={darkMode ? '#1f2937' : '#ffffff'}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`min-h-screen flex flex-col transition-colors duration-200 ${
-        darkMode ? "dark:bg-gray-900" : "bg-gray-50"
-      }`}
-    >
+    <div className={`min-h-screen flex flex-col transition-colors duration-200 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}>
       <div className="container mx-auto px-4 py-8 flex-grow">
         <div className="flex justify-end items-center gap-4 mb-8">
           <button
-            onClick={() => setLanguage(language === "en" ? "fr" : "en")}
+            onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
             className="flex items-center gap-2 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
           >
             <Languages className="w-6 h-6 text-gray-700 dark:text-gray-200" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {language === "en" ? "FR" : "EN"}
+              {language === 'en' ? 'FR' : 'EN'}
             </span>
           </button>
           <button
             onClick={() => setDarkMode(!darkMode)}
             className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
           >
-            {darkMode ? (
-              <Sun className="w-6 h-6 text-yellow-400" />
-            ) : (
-              <Moon className="w-6 h-6 text-gray-700" />
-            )}
+            {darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-gray-700" />}
           </button>
         </div>
 
@@ -95,10 +108,7 @@ function App() {
               {/* Hide content input if content param exists */}
               {!text && (
                 <div>
-                  <label
-                    htmlFor="content"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
+                  <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t.contentLabel}
                   </label>
                   <input
@@ -114,10 +124,7 @@ function App() {
 
               {text && (
                 <div>
-                  <label
-                    htmlFor="filename"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
+                  <label htmlFor="filename" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t.fileNameLabel}
                   </label>
                   <input
@@ -140,8 +147,8 @@ function App() {
                     size={200}
                     level="H"
                     includeMargin={true}
-                    fgColor={darkMode ? "#ffffff" : "#000000"}
-                    bgColor={darkMode ? "#1f2937" : "#ffffff"}
+                    fgColor={darkMode ? '#ffffff' : '#000000'}
+                    bgColor={darkMode ? '#1f2937' : '#ffffff'}
                   />
                 </div>
               )}
